@@ -1,0 +1,44 @@
+{
+  "name": "autonomous-ai-task-worker",
+  "version": "1.0.0",
+  "description": "An autonomous AI worker prototype that understands goals, plans sequences of actions, executes tools, recovers from errors, requests human approval, and verifies outcomes.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "server": "tsx src/server/index.ts",
+    "worker": "tsx src/cli/worker-cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "autonomous-agent",
+    "ai-worker",
+    "react-loop",
+    "human-in-the-loop",
+    "enterprise-automation",
+    "verification"
+  ],
+  "author": "divyadahiya14",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "lucide-react": "^1.16.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.4",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0",
+    "vitest": "^3.0.5"
+  }
+}
