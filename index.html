@@ -980,44 +980,48 @@
       // Step 1: Ingest Document
       setPlanStatus(1, 'in_progress');
       addTrace('tag-thought', '💭 Agent Thought', `Goal received: "${goal}". Decomposing into 4 adaptive milestones. Searching document storage for matching files.`);
-      await delay(600);
+      await delay(1200);
 
       addTrace('tag-action', '⚡ Action: search_inbox', `Searching incoming vendor document repository`, { query: vendorName });
-      await delay(500);
+      await delay(950);
 
       addTrace('tag-obs-ok', '🔬 Observation: Success', `Located document '${targetDoc}' in vendor repository.`);
       setPlanStatus(1, 'completed');
+      await delay(800);
 
       // Step 2: Entity Resolution
       setPlanStatus(2, 'in_progress');
       addTrace('tag-action', '⚡ Action: read_document', `Extracting structured text and entity fields`, { filename: targetDoc });
-      await delay(500);
+      await delay(1000);
 
       // Self-Correction: Stark Net 30 calculation
       if (lower.includes('stark')) {
         addTrace('tag-thought', '💭 Agent Thought', `Notice: Stark invoice lacks explicit due date header. Terms state 'Net 30 days from 2026-10-05'. Invoking calculate_date.`);
-        await delay(400);
+        await delay(900);
         addTrace('tag-action', '⚡ Action: calculate_date', `Adding 30 calendar days to base date 2026-10-05`, { baseDate: "2026-10-05", daysToAdd: 30 });
-        await delay(400);
+        await delay(900);
         addTrace('tag-obs-ok', '🔬 Observation: Success', `Computed Due Date: 2026-11-04.`);
+        await delay(700);
       }
 
       // Self-Correction: Initech date reformatting
       if (lower.includes('initech')) {
         addTrace('tag-action', '⚡ Action: enter_payable (Initial Attempt)', `Attempting ledger registration with unformatted date '11/12/2026'`, { dueDate: "11/12/2026" });
-        await delay(500);
+        await delay(1000);
         addTrace('tag-obs-err', '❌ Observation: Error Intercepted', `ERROR_INVALID_DATE_FORMAT: Due date must be YYYY-MM-DD.`);
-        await delay(400);
+        await delay(800);
         addTrace('tag-heal-badge', '🔄 Self-Healing Recovery', `Agent intercepted error. Invoking 'reformat_date' to convert regional format to ISO standard.`);
         addTrace('tag-action', '⚡ Action: reformat_date', `Converting regional date string to standard ISO format`, { dateStr: "11/12/2026" });
-        await delay(400);
+        await delay(900);
         addTrace('tag-obs-ok', '🔬 Observation: Success', `Reformatted date to standard ISO format: 2026-11-12.`);
+        await delay(700);
       }
 
       addTrace('tag-action', '⚡ Action: lookup_vendor', `Querying ERP vendor directory to resolve canonical ID`, { query: vendorName });
-      await delay(400);
+      await delay(900);
       addTrace('tag-obs-ok', '🔬 Observation: Success', `Resolved canonical entity: ${vendorId} (${vendorName}).`);
       setPlanStatus(2, 'completed');
+      await delay(800);
 
       // Step 3: Write to ERP
       setPlanStatus(3, 'in_progress');
@@ -1038,6 +1042,7 @@
 
         addTrace('tag-obs-ok', '✅ Supervisor Sign-Off Granted', `Authorization token AUTH-MGR-${Date.now().toString(36).toUpperCase()} applied. Resuming ledger write.`);
         setStatus('running', 'EXECUTING');
+        await delay(700);
       }
 
       addTrace('tag-action', '⚡ Action: enter_payable', `Posting accounts payable entry to Apex ERP ledger`, {
@@ -1046,7 +1051,7 @@
         amount,
         dueDate
       });
-      await delay(500);
+      await delay(1000);
 
       const newId = `AP-${1000 + erpPayables.length + 1}`;
       erpPayables.push({
@@ -1061,21 +1066,24 @@
 
       addTrace('tag-obs-ok', '🔬 Observation: Success', `Record ${newId} created successfully in Apex ERP.`);
       setPlanStatus(3, 'completed');
+      await delay(800);
 
       // Step 4: Verification & Notification
       setPlanStatus(4, 'in_progress');
       addTrace('tag-action', '⚡ Action: verify_payable', `Independently querying ERP database to verify state integrity`, { invoiceNumber: invNum });
-      await delay(500);
+      await delay(1000);
       addTrace('tag-obs-ok', '🔬 Observation: State Verified', `Database record confirmed: Ledger amount ($${amount.toFixed(2)}) and due date (${dueDate}) match document.`);
+      await delay(800);
 
       addTrace('tag-action', '⚡ Action: notify_team', `Dispatching completion message to Slack channel #finance-ops`, {
         channel: '#finance-ops',
         subject: `Invoice Processed: ${invNum} ($${amount.toFixed(2)})`,
         message: `Autonomous task complete. Registered ${invNum} under record ${newId}.`
       });
-      await delay(400);
+      await delay(800);
       addTrace('tag-obs-ok', '🔬 Observation: Delivered', `Notification delivered to #finance-ops.`);
       setPlanStatus(4, 'completed');
+      await delay(600);
 
       // Render Verification Dossier
       setStatus('verified', 'VERIFIED 100%');
