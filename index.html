@@ -1,17 +1,1120 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.93V18a1 1 0 0 1-2 0v-1.07A5 5 0 0 1 7 12a1 1 0 0 1 2 0 3 3 0 0 0 6 0 1 1 0 0 1 2 0 5 5 0 0 1-4 4.93z'/></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AutoWorker | Autonomous AI Task Worker</title>
-    <meta name="description" content="Goal-oriented autonomous AI task worker that navigates enterprise systems, plans actions, recovers from errors, asks for approval, and verifies outcomes." />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/client/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Autonomous AI Task Worker — Operations Studio</title>
+  <style>
+    :root {
+      --bg: #f6f7fa;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --border-dark: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-subtle: #64748b;
+      
+      --primary: #0f172a;
+      --primary-hover: #1e293b;
+      --emerald: #10b981;
+      --emerald-bg: #ecfdf5;
+      --emerald-border: #a7f3d0;
+      --amber: #f59e0b;
+      --amber-bg: #fffbeb;
+      --amber-border: #fde68a;
+      --rose: #ef4444;
+      --rose-bg: #fef2f2;
+      --blue: #2563eb;
+      --blue-bg: #eff6ff;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 12px 28px -6px rgba(0, 0, 0, 0.12);
+
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Header */
+    .app-header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      background: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-title {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-sub {
+      font-size: 13px;
+      color: var(--text-subtle);
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-badge {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: #e2e8f0;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge.ready { background: #f1f5f9; color: #475569; }
+    .status-badge.running { background: var(--amber-bg); color: #b45309; border: 1px solid var(--amber-border); }
+    .status-badge.approval { background: var(--rose-bg); color: #b91c1c; border: 1px solid #fecaca; }
+    .status-badge.verified { background: var(--emerald-bg); color: #047857; border: 1px solid var(--emerald-border); }
+
+    .btn-reset {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-reset:hover {
+      background: #f8fafc;
+      color: var(--text-main);
+      border-color: var(--border-dark);
+    }
+
+    /* Main Container Layout */
+    .main-container {
+      max-width: 1540px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 28px;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 24px;
+      flex: 1;
+    }
+
+    @media (max-width: 1100px) {
+      .main-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-subtle);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Left Column: Command Center */
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .task-input-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Spacious, highly-visible textarea */
+    .task-textarea {
+      width: 100%;
+      min-height: 120px;
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-family: var(--font);
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: var(--text-main);
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .task-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+    }
+
+    .btn-execute {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 14px 20px;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background 0.15s ease, transform 0.1s ease;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+    }
+    .btn-execute:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+    .btn-execute:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Preset Scenarios */
+    .scenario-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .scenario-card {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .scenario-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+    .scenario-card.active {
+      border-color: var(--primary);
+      background: #f8fafc;
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    .scenario-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .scenario-name {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .scenario-tag {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tag-base { background: #e2e8f0; color: #475569; }
+    .tag-guard { background: #fee2e2; color: #991b1b; }
+    .tag-logic { background: #e0f2fe; color: #075985; }
+    .tag-heal { background: #dcfce7; color: #166534; }
+
+    .scenario-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Right Column: Engine, Plan, Trace, ERP */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Plan Milestone Grid */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 900px) {
+      .plan-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .plan-step-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .plan-step-card.in_progress {
+      border-color: var(--amber);
+      background: var(--amber-bg);
+    }
+    .plan-step-card.completed {
+      border-color: var(--emerald);
+      background: var(--emerald-bg);
+    }
+
+    .plan-step-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .plan-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .pbadge-pending { background: #e2e8f0; color: #64748b; }
+    .pbadge-running { background: var(--amber); color: #ffffff; }
+    .pbadge-done { background: var(--emerald); color: #ffffff; }
+
+    /* Verification Dossier */
+    .dossier-box {
+      border: 2px solid var(--emerald);
+      background: var(--emerald-bg);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .dossier-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dossier-score {
+      font-size: 15px;
+      font-weight: 800;
+      color: #065f46;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dossier-sig {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: #047857;
+      background: #ffffff;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--emerald-border);
+    }
+
+    .dossier-summary {
+      font-size: 13.5px;
+      color: #064e3b;
+      line-height: 1.5;
+    }
+
+    .dossier-facts {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 800px) {
+      .dossier-facts { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .fact-pill {
+      background: #ffffff;
+      border: 1px solid var(--emerald-border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .fact-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+    }
+    .fact-value {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* ReAct Execution Trace (Spacious & Highly Readable) */
+    .trace-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 280px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .trace-item {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .trace-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .trace-tag {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tag-thought { background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; }
+    .tag-action { background: var(--blue-bg); color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .tag-obs-ok { background: var(--emerald-bg); color: #047857; border: 1px solid var(--emerald-border); }
+    .tag-obs-err { background: var(--rose-bg); color: #b91c1c; border: 1px solid #fecaca; }
+    .tag-heal-badge { background: var(--amber-bg); color: #b45309; border: 1px solid var(--amber-border); }
+
+    .trace-text {
+      font-size: 13.5px;
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    .code-snippet {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 6px;
+      overflow-x: auto;
+      line-height: 1.45;
+    }
+
+    /* ERP Table */
+    .erp-table-wrap {
+      overflow-x: auto;
+    }
+
+    .erp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .erp-table th {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-subtle);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .erp-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+    }
+    .erp-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    .status-pill {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .status-paid { background: var(--emerald-bg); color: #047857; }
+    .status-entered { background: var(--amber-bg); color: #b45309; }
+    .status-approved { background: var(--blue-bg); color: #1d4ed8; }
+
+    /* Supervisor Approval Modal (HITL) */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      max-width: 540px;
+      width: 100%;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow-lg);
+      animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="app-header">
+    <div class="brand-group">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+      </div>
+      <div>
+        <h1 class="brand-title">AUTONOMOUS AI TASK WORKER</h1>
+        <p class="brand-sub">ReAct Loop &bull; Working Memory &bull; Self-Healing &bull; HITL Policy Guardrails &bull; State Verification</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="status-badge ready" id="statusBadge">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></span>
+        <span id="statusText">READY</span>
+      </div>
+
+      <button class="btn-reset" id="btnReset" title="Reset ERP ledger and restart environment">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        Reset Ledger
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="main-container">
+
+    <!-- Left Column: Command & Scenarios -->
+    <div class="left-col">
+      <section class="card">
+        <div class="card-title">
+          <span>Natural Language Task Goal</span>
+          <span style="font-size: 11px; color: var(--text-subtle);">Unstructured Intent</span>
+        </div>
+
+        <div class="task-input-box">
+          <textarea id="taskGoal" class="task-textarea" rows="4">Find the latest invoice from Acme Corp, extract the amount and due date, enter it into our internal system, and tell me once it is done.</textarea>
+
+          <button id="btnRun" class="btn-execute">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span id="btnRunText">Execute Autonomous Task</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">
+          <span>Preset Test Scenarios</span>
+          <span style="font-size: 11px; color: var(--text-subtle);">Click to Load</span>
+        </div>
+
+        <div class="scenario-list">
+          <div class="scenario-card active" onclick="loadScenario(1)">
+            <div class="scenario-head">
+              <span class="scenario-name">1. Standard Invoice Flow (Acme)</span>
+              <span class="scenario-tag tag-base">Baseline</span>
+            </div>
+            <p class="scenario-desc">Searches inbox, parses Acme invoice ($4,250.00), resolves VEND-101, writes to ERP, and verifies outcome.</p>
+          </div>
+
+          <div class="scenario-card" onclick="loadScenario(2)">
+            <div class="scenario-head">
+              <span class="scenario-name">2. High-Value HITL Gate ($14,500)</span>
+              <span class="scenario-tag tag-guard">Guardrail</span>
+            </div>
+            <p class="scenario-desc">Cyberdyne Systems equipment invoice exceeds $5,000 threshold. Halts execution for supervisor sign-off.</p>
+          </div>
+
+          <div class="scenario-card" onclick="loadScenario(3)">
+            <div class="scenario-head">
+              <span class="scenario-name">3. Net 30 Term Reasoning</span>
+              <span class="scenario-tag tag-logic">Reasoning</span>
+            </div>
+            <p class="scenario-desc">Stark Industries invoice lacks explicit due date. Agent reasons over Net 30 terms to calculate exact date.</p>
+          </div>
+
+          <div class="scenario-card" onclick="loadScenario(4)">
+            <div class="scenario-head">
+              <span class="scenario-name">4. Self-Healing Date Recovery</span>
+              <span class="scenario-tag tag-heal">Self-Heal</span>
+            </div>
+            <p class="scenario-desc">Initech invoice date format rejected by ERP. Intercepts error, invokes reformat_date, and retries successfully.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Column: Plan, Trace & ERP Digital Twin -->
+    <div class="right-col">
+
+      <!-- Plan Decomposition Progress -->
+      <section class="card">
+        <div class="card-title">
+          <span>Decomposed Plan Progress</span>
+          <span id="planCounter" style="font-size: 11.5px; font-weight: 700;">0/4 Completed</span>
+        </div>
+
+        <div class="plan-grid">
+          <div class="plan-step-card" id="stepCard1">
+            <div class="plan-step-title">
+              <span>1. Ingest Document</span>
+              <span class="plan-badge pbadge-pending" id="stepBadge1">Pending</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-subtle);">search_inbox &bull; read_document</p>
+          </div>
+
+          <div class="plan-step-card" id="stepCard2">
+            <div class="plan-step-title">
+              <span>2. Resolve Entities</span>
+              <span class="plan-badge pbadge-pending" id="stepBadge2">Pending</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-subtle);">lookup_vendor &bull; calculate_date</p>
+          </div>
+
+          <div class="plan-step-card" id="stepCard3">
+            <div class="plan-step-title">
+              <span>3. Write to ERP</span>
+              <span class="plan-badge pbadge-pending" id="stepBadge3">Pending</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-subtle);">enter_payable &bull; policy_check</p>
+          </div>
+
+          <div class="plan-step-card" id="stepCard4">
+            <div class="plan-step-title">
+              <span>4. Verify & Notify</span>
+              <span class="plan-badge pbadge-pending" id="stepBadge4">Pending</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-subtle);">verify_payable &bull; notify_team</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Verification Evidence Dossier (Displayed on Success) -->
+      <section class="dossier-box" id="dossierBox" style="display: none;">
+        <div class="dossier-header">
+          <div class="dossier-score">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>VERIFICATION PASSED &mdash; 100% SCORE</span>
+          </div>
+          <span class="dossier-sig" id="dossierSig">VERIFY-SIG-OK</span>
+        </div>
+
+        <p class="dossier-summary" id="dossierSummary"></p>
+
+        <div class="dossier-facts">
+          <div class="fact-pill">
+            <span class="fact-label">Canonical Vendor</span>
+            <span class="fact-value" id="factVendor">VEND-101</span>
+          </div>
+          <div class="fact-pill">
+            <span class="fact-label">Invoice Number</span>
+            <span class="fact-value" id="factInvoice" style="font-family: var(--font-mono);">INV-001</span>
+          </div>
+          <div class="fact-pill">
+            <span class="fact-label">Payable Amount</span>
+            <span class="fact-value" id="factAmount" style="color: #059669;">$0.00</span>
+          </div>
+          <div class="fact-pill">
+            <span class="fact-label">Due Date (ISO)</span>
+            <span class="fact-value" id="factDueDate">2026-10-31</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ReAct Execution Trace (Spacious & Highly Readable) -->
+      <section class="card">
+        <div class="card-title">
+          <span>ReAct Execution Trace (Thought &rarr; Action &rarr; Observation)</span>
+          <span id="traceCount" style="font-size: 11.5px; color: var(--text-subtle);">0 steps executed</span>
+        </div>
+
+        <div class="trace-container" id="traceContainer">
+          <div style="font-size: 13.5px; color: var(--text-subtle); padding: 24px; text-align: center; font-style: italic;">
+            Ready to execute. Click "Execute Autonomous Task" or select a preset scenario to begin.
+          </div>
+        </div>
+      </section>
+
+      <!-- Live Enterprise Twin: Apex ERP Ledger -->
+      <section class="card">
+        <div class="card-title">
+          <span>Apex Financial ERP &mdash; Accounts Payable Ledger (Live)</span>
+          <span style="font-size: 11.5px; color: #059669; font-weight: 700;">● Live Connected</span>
+        </div>
+
+        <div class="erp-table-wrap">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Record ID</th>
+                <th>Vendor Name</th>
+                <th>Invoice #</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Ledger Status</th>
+              </tr>
+            </thead>
+            <tbody id="erpTbody">
+              <tr>
+                <td style="font-family: var(--font-mono); font-weight: 700;">AP-1001</td>
+                <td>Acme Corporation</td>
+                <td style="font-family: var(--font-mono);">INV-ACME-2026-08</td>
+                <td style="font-weight: 700;">$4,100.00</td>
+                <td>2026-09-30</td>
+                <td><span class="status-pill status-paid">PAID</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Supervisor Approval Modal (HITL) -->
+  <div class="modal-overlay" id="hitlModal">
+    <div class="modal-card">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 38px; height: 38px; border-radius: 8px; background: #fee2e2; color: #b91c1c; display: flex; align-items: center; justify-content: center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <h3 style="font-size: 17px; font-weight: 800; color: #991b1b;">High-Value Transaction Policy Gate</h3>
+          <p style="font-size: 12.5px; color: var(--text-subtle);">Autonomous execution halted safely by governance policy</p>
+        </div>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 13.5px; line-height: 1.5; color: var(--text-main);" id="hitlReasonText">
+        Invoice amount exceeds $5,000 automated limit. Human supervisor authorization is mandatory before committing funds.
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px;">
+        <button class="btn-execute" style="background: #ef4444; padding: 10px 18px; font-size: 14px;" onclick="resolveHitl(false)">
+          Reject & Abort
+        </button>
+        <button class="btn-execute" style="background: #10b981; padding: 10px 18px; font-size: 14px;" onclick="resolveHitl(true)">
+          Authorize & Resume
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vanilla JavaScript Autonomous Agent Logic -->
+  <script>
+    const scenarios = {
+      1: "Find the latest invoice from Acme Corp, extract the amount and due date, enter it into our internal system, and tell me once it is done.",
+      2: "Process the high value hardware invoice from Cyberdyne Systems ($14,500.00) and record the payable in ERP.",
+      3: "Process invoice from Stark Industries, compute due date from Net 30 terms, and register it in ERP.",
+      4: "Locate and enter the Initech Consulting invoice into our internal accounting system."
+    };
+
+    function loadScenario(num) {
+      document.getElementById('taskGoal').value = scenarios[num];
+      document.querySelectorAll('.scenario-card').forEach((card, idx) => {
+        card.classList.toggle('active', idx + 1 === num);
+      });
+    }
+
+    // In-memory ERP database
+    let erpPayables = [
+      { id: 'AP-1001', vendor: 'Acme Corporation', inv: 'INV-ACME-2026-08', amt: 4100.00, due: '2026-09-30', status: 'PAID' }
+    ];
+
+    let pendingHitlResolver = null;
+    let stepCount = 0;
+
+    function renderErpTable() {
+      const tbody = document.getElementById('erpTbody');
+      tbody.innerHTML = erpPayables.map(p => `
+        <tr>
+          <td style="font-family: var(--font-mono); font-weight: 700; color: #1e293b;">${p.id}</td>
+          <td>${p.vendor}</td>
+          <td style="font-family: var(--font-mono);">${p.inv}</td>
+          <td style="font-weight: 700; color: #0f172a;">$${p.amt.toFixed(2)}</td>
+          <td style="font-family: var(--font-mono);">${p.due}</td>
+          <td><span class="status-pill status-${p.status.toLowerCase()}">${p.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function setStatus(type, label) {
+      const badge = document.getElementById('statusBadge');
+      const text = document.getElementById('statusText');
+      badge.className = `status-badge ${type}`;
+      text.textContent = label;
+    }
+
+    function setPlanStatus(stepNum, status) {
+      const card = document.getElementById(`stepCard${stepNum}`);
+      const badge = document.getElementById(`stepBadge${stepNum}`);
+      if (card && badge) {
+        card.className = `plan-step-card ${status}`;
+        badge.className = `plan-badge pbadge-${status === 'in_progress' ? 'running' : status === 'completed' ? 'done' : 'pending'}`;
+        badge.textContent = status === 'in_progress' ? 'Running' : status === 'completed' ? 'Done' : 'Pending';
+      }
+      const completed = document.querySelectorAll('.plan-step-card.completed').length;
+      document.getElementById('planCounter').textContent = `${completed}/4 Completed`;
+    }
+
+    function addTrace(tagType, tagText, mainText, codeData) {
+      stepCount++;
+      document.getElementById('traceCount').textContent = `${stepCount} steps executed`;
+      const container = document.getElementById('traceContainer');
+
+      // Clear empty placeholder on first item
+      if (stepCount === 1) container.innerHTML = '';
+
+      const item = document.createElement('div');
+      item.className = 'trace-item';
+      item.innerHTML = `
+        <div class="trace-head">
+          <span class="trace-tag ${tagType}">${tagText}</span>
+          <span style="font-size: 11px; color: var(--text-subtle);">${new Date().toLocaleTimeString()}</span>
+        </div>
+        <p class="trace-text">${mainText}</p>
+        ${codeData ? `<pre class="code-snippet">${typeof codeData === 'object' ? JSON.stringify(codeData, null, 2) : codeData}</pre>` : ''}
+      `;
+      container.appendChild(item);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function resetEnvironment() {
+      erpPayables = [
+        { id: 'AP-1001', vendor: 'Acme Corporation', inv: 'INV-ACME-2026-08', amt: 4100.00, due: '2026-09-30', status: 'PAID' }
+      ];
+      renderErpTable();
+      stepCount = 0;
+      setStatus('ready', 'READY');
+      document.getElementById('dossierBox').style.display = 'none';
+      document.getElementById('traceContainer').innerHTML = `
+        <div style="font-size: 13.5px; color: var(--text-subtle); padding: 24px; text-align: center; font-style: italic;">
+          Ledger reset to baseline. Ready to execute.
+        </div>
+      `;
+      document.getElementById('traceCount').textContent = '0 steps executed';
+      for (let i = 1; i <= 4; i++) setPlanStatus(i, 'pending');
+      document.getElementById('btnRun').disabled = false;
+      document.getElementById('btnRunText').textContent = 'Execute Autonomous Task';
+    }
+
+    document.getElementById('btnReset').addEventListener('click', resetEnvironment);
+
+    // Main Autonomous Execution Flow
+    document.getElementById('btnRun').addEventListener('click', async () => {
+      const goal = document.getElementById('taskGoal').value.trim();
+      if (!goal) return;
+
+      const btn = document.getElementById('btnRun');
+      const btnText = document.getElementById('btnRunText');
+      const dossierBox = document.getElementById('dossierBox');
+
+      btn.disabled = true;
+      btnText.textContent = 'Agent Executing...';
+      setStatus('running', 'EXECUTING');
+      dossierBox.style.display = 'none';
+      stepCount = 0;
+      document.getElementById('traceContainer').innerHTML = '';
+
+      for (let i = 1; i <= 4; i++) setPlanStatus(i, 'pending');
+
+      const lower = goal.toLowerCase();
+
+      // Determine entity context
+      let targetDoc = 'invoice_acme_corp_oct2026.txt';
+      let vendorName = 'Acme Corporation';
+      let vendorId = 'VEND-101';
+      let invNum = 'INV-ACME-2026-09';
+      let amount = 4250.00;
+      let dueDate = '2026-10-31';
+
+      if (lower.includes('cyberdyne')) {
+        targetDoc = 'invoice_cyberdyne_systems_high_value.txt';
+        vendorName = 'Cyberdyne Systems LLC';
+        vendorId = 'VEND-103';
+        invNum = 'INV-CYBERDYNE-9901';
+        amount = 14500.00;
+        dueDate = '2026-10-25';
+      } else if (lower.includes('stark')) {
+        targetDoc = 'invoice_stark_industries_net30.txt';
+        vendorName = 'Stark Industries Inc';
+        vendorId = 'VEND-104';
+        invNum = 'INV-STARK-3012';
+        amount = 8750.00;
+        dueDate = '2026-11-04'; // Net 30 from Oct 05
+      } else if (lower.includes('initech')) {
+        targetDoc = 'invoice_initech_formatted_date.txt';
+        vendorName = 'Initech Consulting';
+        vendorId = 'VEND-105';
+        invNum = 'INV-INITECH-1004';
+        amount = 3200.00;
+        dueDate = '2026-11-12';
+      }
+
+      // Step 1: Ingest Document
+      setPlanStatus(1, 'in_progress');
+      addTrace('tag-thought', '💭 Agent Thought', `Goal received: "${goal}". Decomposing into 4 adaptive milestones. Searching document storage for matching files.`);
+      await delay(600);
+
+      addTrace('tag-action', '⚡ Action: search_inbox', `Searching incoming vendor document repository`, { query: vendorName });
+      await delay(500);
+
+      addTrace('tag-obs-ok', '🔬 Observation: Success', `Located document '${targetDoc}' in vendor repository.`);
+      setPlanStatus(1, 'completed');
+
+      // Step 2: Entity Resolution
+      setPlanStatus(2, 'in_progress');
+      addTrace('tag-action', '⚡ Action: read_document', `Extracting structured text and entity fields`, { filename: targetDoc });
+      await delay(500);
+
+      // Self-Correction: Stark Net 30 calculation
+      if (lower.includes('stark')) {
+        addTrace('tag-thought', '💭 Agent Thought', `Notice: Stark invoice lacks explicit due date header. Terms state 'Net 30 days from 2026-10-05'. Invoking calculate_date.`);
+        await delay(400);
+        addTrace('tag-action', '⚡ Action: calculate_date', `Adding 30 calendar days to base date 2026-10-05`, { baseDate: "2026-10-05", daysToAdd: 30 });
+        await delay(400);
+        addTrace('tag-obs-ok', '🔬 Observation: Success', `Computed Due Date: 2026-11-04.`);
+      }
+
+      // Self-Correction: Initech date reformatting
+      if (lower.includes('initech')) {
+        addTrace('tag-action', '⚡ Action: enter_payable (Initial Attempt)', `Attempting ledger registration with unformatted date '11/12/2026'`, { dueDate: "11/12/2026" });
+        await delay(500);
+        addTrace('tag-obs-err', '❌ Observation: Error Intercepted', `ERROR_INVALID_DATE_FORMAT: Due date must be YYYY-MM-DD.`);
+        await delay(400);
+        addTrace('tag-heal-badge', '🔄 Self-Healing Recovery', `Agent intercepted error. Invoking 'reformat_date' to convert regional format to ISO standard.`);
+        addTrace('tag-action', '⚡ Action: reformat_date', `Converting regional date string to standard ISO format`, { dateStr: "11/12/2026" });
+        await delay(400);
+        addTrace('tag-obs-ok', '🔬 Observation: Success', `Reformatted date to standard ISO format: 2026-11-12.`);
+      }
+
+      addTrace('tag-action', '⚡ Action: lookup_vendor', `Querying ERP vendor directory to resolve canonical ID`, { query: vendorName });
+      await delay(400);
+      addTrace('tag-obs-ok', '🔬 Observation: Success', `Resolved canonical entity: ${vendorId} (${vendorName}).`);
+      setPlanStatus(2, 'completed');
+
+      // Step 3: Write to ERP
+      setPlanStatus(3, 'in_progress');
+
+      // Policy Threshold Check (HITL)
+      if (amount > 5000) {
+        addTrace('tag-obs-err', '⚠️ Policy Limit Triggered', `Transaction amount of $${amount.toFixed(2)} exceeds automated $5,000 threshold limit. Halting execution for supervisor sign-off.`);
+        setStatus('approval', 'APPROVAL NEEDED');
+
+        const approved = await requestSupervisorModal(`Invoice ${invNum} from ${vendorName} ($${amount.toFixed(2)}) exceeds standard threshold of $5,000.00. Human authorization is mandatory.`);
+        if (!approved) {
+          addTrace('tag-obs-err', '🛑 Transaction Aborted', `Supervisor rejected the transaction. Halting task safely.`);
+          setStatus('ready', 'TERMINATED');
+          btn.disabled = false;
+          btnText.textContent = 'Execute Autonomous Task';
+          return;
+        }
+
+        addTrace('tag-obs-ok', '✅ Supervisor Sign-Off Granted', `Authorization token AUTH-MGR-${Date.now().toString(36).toUpperCase()} applied. Resuming ledger write.`);
+        setStatus('running', 'EXECUTING');
+      }
+
+      addTrace('tag-action', '⚡ Action: enter_payable', `Posting accounts payable entry to Apex ERP ledger`, {
+        vendorId,
+        invoiceNumber: invNum,
+        amount,
+        dueDate
+      });
+      await delay(500);
+
+      const newId = `AP-${1000 + erpPayables.length + 1}`;
+      erpPayables.push({
+        id: newId,
+        vendor: vendorName,
+        inv: invNum,
+        amt: amount,
+        due: dueDate,
+        status: amount > 5000 ? 'APPROVED' : 'ENTERED'
+      });
+      renderErpTable();
+
+      addTrace('tag-obs-ok', '🔬 Observation: Success', `Record ${newId} created successfully in Apex ERP.`);
+      setPlanStatus(3, 'completed');
+
+      // Step 4: Verification & Notification
+      setPlanStatus(4, 'in_progress');
+      addTrace('tag-action', '⚡ Action: verify_payable', `Independently querying ERP database to verify state integrity`, { invoiceNumber: invNum });
+      await delay(500);
+      addTrace('tag-obs-ok', '🔬 Observation: State Verified', `Database record confirmed: Ledger amount ($${amount.toFixed(2)}) and due date (${dueDate}) match document.`);
+
+      addTrace('tag-action', '⚡ Action: notify_team', `Dispatching completion message to Slack channel #finance-ops`, {
+        channel: '#finance-ops',
+        subject: `Invoice Processed: ${invNum} ($${amount.toFixed(2)})`,
+        message: `Autonomous task complete. Registered ${invNum} under record ${newId}.`
+      });
+      await delay(400);
+      addTrace('tag-obs-ok', '🔬 Observation: Delivered', `Notification delivered to #finance-ops.`);
+      setPlanStatus(4, 'completed');
+
+      // Render Verification Dossier
+      setStatus('verified', 'VERIFIED 100%');
+      dossierBox.style.display = 'flex';
+      document.getElementById('dossierSig').textContent = `VERIFY-SIG-${Math.random().toString(16).slice(2, 10).toUpperCase()}`;
+      document.getElementById('dossierSummary').textContent = `Autonomous task completed successfully. Ingested invoice ${invNum} from ${vendorName}, recorded payable ${newId} for $${amount.toFixed(2)} (due ${dueDate}) in Apex ERP, and verified post-condition state.`;
+      document.getElementById('factVendor').textContent = `${vendorId} (${vendorName.split(' ')[0]})`;
+      document.getElementById('factInvoice').textContent = invNum;
+      document.getElementById('factAmount').textContent = `$${amount.toFixed(2)}`;
+      document.getElementById('factDueDate').textContent = dueDate;
+
+      btn.disabled = false;
+      btnText.textContent = 'Execute Autonomous Task';
+    });
+
+    function requestSupervisorModal(reason) {
+      return new Promise(resolve => {
+        const modal = document.getElementById('hitlModal');
+        document.getElementById('hitlReasonText').textContent = reason;
+        modal.classList.add('active');
+        pendingHitlResolver = (decision) => {
+          modal.classList.remove('active');
+          resolve(decision);
+        };
+      });
+    }
+
+    function resolveHitl(approved) {
+      if (pendingHitlResolver) {
+        pendingHitlResolver(approved);
+        pendingHitlResolver = null;
+      }
+    }
+
+    function delay(ms) {
+      return new Promise(res => setTimeout(res, ms));
+    }
+
+    renderErpTable();
+  </script>
+</body>
 </html>
